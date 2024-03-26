@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read # to fetch code (actions/checkout)
+  contents: write  # for creating releases
 
 jobs:
   main:
