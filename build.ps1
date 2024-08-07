@@ -30,7 +30,7 @@ If($vs2008) {
 
     $community = Get-BatPath 2019 "Community" $vcvarsarch
     $enterprise = Get-BatPath 2019 "Enterprise" $vcvarsarch
-    
+
     $bat = ""
     if (Test-Path $community) {
         $bat = $community
@@ -113,6 +113,6 @@ New-Item -ItemType Directory .\dist
 Dir $iconvLib\libiconv* | Copy-Item -Force -Destination {Join-Path $iconvLib ($_.Name -replace "libiconv","iconv") }
 
 BundleRelease "iconv-1.15.$distname" (dir $iconvLib\iconv_a*) (dir $iconvInc\*)
-BundleRelease "libxml2-2.11.7.$distname" (dir $xmlLib\*) (Get-Item $xmlInc\libxml)
+BundleRelease "libxml2-2.11.8.$distname" (dir $xmlLib\*) (Get-Item $xmlInc\libxml)
 BundleRelease "libxslt-1.1.39.$distname" (dir .\libxslt\win32\bin.msvc\*) (Get-Item .\libxslt\libxslt,.\libxslt\libexslt)
-BundleRelease "zlib-1.2.12.$distname" (Get-Item .\zlib\*.*) (Get-Item .\zlib\zconf.h,.\zlib\zlib.h)
+BundleRelease "zlib-1.3.1.$distname" (Get-Item .\zlib\*.*) (Get-Item .\zlib\zconf.h,.\zlib\zlib.h)
