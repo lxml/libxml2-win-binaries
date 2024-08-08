@@ -1,5 +1,5 @@
 <#
-This script builds libiconv,libxml2 and libxslt
+This script builds libiconv, zlib, libxml2 and libxslt
 #>
 Param(
     [switch]$x64,
