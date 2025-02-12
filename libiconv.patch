@@ -1,95 +1,16 @@
-From 932b75e8aaec6805a23009e11f6ad11f858c6c1e Mon Sep 17 00:00:00 2001
-From: Niyas Sait <niyas.sait@linaro.org>
-Date: Fri, 5 Nov 2021 14:58:39 +0000
-Subject: [PATCH 1/1] add msvc 16 files
-
----
- .../libiconv_dll/libiconv_dll.vcxproj.filters |  47 +++
- .../libiconv_static/libiconv_static.vcxproj   | 297 ++++++++++++++++
- .../libiconv_static.vcxproj.filters           |  39 +++
- MSVC16/vs16.bat                               |   6 +
- 4 files changed, 844 insertions(+)
- create mode 100644 MSVC16/libiconv_dll/libiconv_dll.vcxproj.filters
- create mode 100644 MSVC16/libiconv_static/libiconv_static.vcxproj
- create mode 100644 MSVC16/libiconv_static/libiconv_static.vcxproj.filters
- create mode 100644 MSVC16/vs16.bat
-
-diff --git a/MSVC16/libiconv_dll/libiconv_dll.vcxproj.filters b/MSVC16/libiconv_dll/libiconv_dll.vcxproj.filters
-new file mode 100644
-index 0000000..2e34cd7
---- /dev/null
-+++ b/MSVC16/libiconv_dll/libiconv_dll.vcxproj.filters
-@@ -0,0 +1,47 @@
-+﻿<?xml version="1.0" encoding="utf-8"?>
-+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-+  <ItemGroup>
-+    <Filter Include="Source Files">
-+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-+    </Filter>
-+    <Filter Include="Header Files">
-+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-+    </Filter>
-+    <Filter Include="Resource Files">
-+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
-+    </Filter>
-+  </ItemGroup>
-+  <ItemGroup>
-+    <ClCompile Include="..\..\source\lib\iconv.c">
-+      <Filter>Source Files</Filter>
-+    </ClCompile>
-+    <ClCompile Include="..\..\source\libcharset\lib\localcharset.c">
-+      <Filter>Source Files</Filter>
-+    </ClCompile>
-+    <ClCompile Include="..\..\source\lib\relocatable.c">
-+      <Filter>Source Files</Filter>
-+    </ClCompile>
-+  </ItemGroup>
-+  <ItemGroup>
-+    <ClInclude Include="..\..\source\config.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+    <ClInclude Include="..\..\source\include\iconv.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+    <ClInclude Include="..\..\source\lib\localcharset.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+  </ItemGroup>
-+  <ItemGroup>
-+    <ResourceCompile Include="..\libiconv-64.rc">
-+      <Filter>Resource Files</Filter>
-+    </ResourceCompile>
-+    <ResourceCompile Include="..\libiconv.rc">
-+      <Filter>Resource Files</Filter>
-+    </ResourceCompile>
-+  </ItemGroup>
-+</Project>
 diff --git a/MSVC16/libiconv_static/libiconv_static.vcxproj b/MSVC16/libiconv_static/libiconv_static.vcxproj
-index bea553d..1de4d0b 100644
+index bea553d..867c64d 100644
 --- a/MSVC16/libiconv_static/libiconv_static.vcxproj
 +++ b/MSVC16/libiconv_static/libiconv_static.vcxproj
-@@ -92,7 +92,7 @@
-     <_ProjectFileVersion>11.0.51106.1</_ProjectFileVersion>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
--    <OutDir>..\$(Platform)\</OutDir>
-+    <OutDir>..\</OutDir>
+@@ -100,6 +100,7 @@
      <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
    </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-@@ -103,7 +103,7 @@
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
++    <OutDir>..\$(Platform)\</OutDir>
      <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
--    <OutDir>..\$(Platform)\</OutDir>
-+    <OutDir>..\</OutDir>
-     <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-@@ -111,6 +111,7 @@
+@@ -111,6 +112,7 @@
      <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
    </PropertyGroup>
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -97,64 +18,3 @@ index bea553d..1de4d0b 100644
      <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-diff --git a/MSVC16/libiconv_static/libiconv_static.vcxproj.filters b/MSVC16/libiconv_static/libiconv_static.vcxproj.filters
-new file mode 100644
-index 0000000..f405099
---- /dev/null
-+++ b/MSVC16/libiconv_static/libiconv_static.vcxproj.filters
-@@ -0,0 +1,39 @@
-+﻿<?xml version="1.0" encoding="utf-8"?>
-+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-+  <ItemGroup>
-+    <Filter Include="Source Files">
-+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-+    </Filter>
-+    <Filter Include="Header Files">
-+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-+    </Filter>
-+    <Filter Include="Resource Files">
-+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
-+    </Filter>
-+  </ItemGroup>
-+  <ItemGroup>
-+    <ClCompile Include="..\..\source\lib\iconv.c">
-+      <Filter>Source Files</Filter>
-+    </ClCompile>
-+    <ClCompile Include="..\..\source\libcharset\lib\localcharset.c">
-+      <Filter>Source Files</Filter>
-+    </ClCompile>
-+    <ClCompile Include="..\..\source\lib\relocatable.c">
-+      <Filter>Source Files</Filter>
-+    </ClCompile>
-+  </ItemGroup>
-+  <ItemGroup>
-+    <ClInclude Include="..\..\source\config.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+    <ClInclude Include="..\..\source\include\iconv.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+    <ClInclude Include="..\..\source\lib\localcharset.h">
-+      <Filter>Header Files</Filter>
-+    </ClInclude>
-+  </ItemGroup>
-+</Project>
-\ No newline at end of file
-diff --git a/MSVC16/vs16.bat b/MSVC16/vs16.bat
-new file mode 100644
-index 0000000..888f862
---- /dev/null
-+++ b/MSVC16/vs16.bat
-@@ -0,0 +1,6 @@
-+msbuild libiconv.sln /t:Rebuild /p:Configuration=Release /p:Platform=Win32
-+msbuild libiconv.sln /t:Rebuild /p:Configuration=Debug /p:Platform=Win32
-+xcopy ..\source\include\iconv.h Win32\include\
-+msbuild libiconv.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64
-+msbuild libiconv.sln /t:Rebuild /p:Configuration=Debug /p:Platform=x64
-+xcopy ..\source\include\iconv.h x64\include\
---
-2.32.0.windows.1
-
