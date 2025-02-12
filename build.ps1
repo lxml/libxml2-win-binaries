@@ -18,7 +18,7 @@ Function Get-BatPath($year, $edition, $vcvarsarch) {
     }
 }
 
-$platDir = If($x64) { "\x64" } ElseIf ($arm64) { "\arm64" } Else { "" }
+$platDir = If($x64) { "\x64" } ElseIf ($arm64) { "\arm64" } Else { "\Win32" }
 $distname = If($x64) { "win64" } ElseIf($arm64) { "win-arm64" } Else { "win32" }
 If($vs2008) { $distname = "vs2008.$distname" }
 
