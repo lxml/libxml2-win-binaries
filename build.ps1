@@ -56,7 +56,7 @@ if($vs2008) {
 } else {
     Set-Location .\libiconv\MSVC16
     msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release
-    $iconvLib = Join-Path (pwd) $platDir\lib
+    $iconvLib = Join-Path (pwd) $platDir\Release\lib
 }
 
 $iconvInc = Join-Path $PSScriptRoot libiconv\source\include
