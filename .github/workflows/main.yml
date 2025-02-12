@@ -38,6 +38,9 @@ jobs:
     - name: build
       shell: pwsh
       run: |
+        cd libiconv
+        git apply ..\libiconv.patch
+        cd ..
         Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
         install-module pscx -scope CurrentUser -AllowClobber
         $x64param = if ('${{ matrix.architecture }}' -eq 'x64') { $true } else { $false }
