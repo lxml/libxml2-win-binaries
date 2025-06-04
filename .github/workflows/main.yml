@@ -26,7 +26,7 @@ jobs:
         - x64
         - arm64
         compiler:
-        - vs2019
+        - vs2022
 
     steps:
 
