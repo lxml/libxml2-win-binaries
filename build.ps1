@@ -28,8 +28,8 @@ If($vs2008) {
 } Else {
     $vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "x86_arm64" } Else { "32" }
 
-    $community = Get-BatPath 2019 "Community" $vcvarsarch
-    $enterprise = Get-BatPath 2019 "Enterprise" $vcvarsarch
+    $community = Get-BatPath 2022 "Community" $vcvarsarch
+    $enterprise = Get-BatPath 2022 "Enterprise" $vcvarsarch
 
     $bat = ""
     if (Test-Path $community) {
