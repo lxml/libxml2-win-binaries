@@ -18,23 +18,3 @@ index bea553d..867c64d 100644
      <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-diff --git a/MSVC17/libiconv_static/libiconv_static.vcxproj b/MSVC17/libiconv_static/libiconv_static.vcxproj
-index bea553d..867c64d 100644
---- a/MSVC17/libiconv_static/libiconv_static.vcxproj
-+++ b/MSVC17/libiconv_static/libiconv_static.vcxproj
-@@ -100,6 +100,7 @@
-     <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-+    <OutDir>..\$(Platform)\</OutDir>
-     <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-@@ -111,6 +112,7 @@
-     <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-+    <OutDir>..\$(Platform)\</OutDir>
-     <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
-   </PropertyGroup>
-   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
