@@ -18,3 +18,29 @@ index bea553d..867c64d 100644
      <IntDir>obj\$(Configuration)\$(Platform)\</IntDir>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+diff --git a/MSVC17/libiconv_dll/libiconv_dll.vcxproj b/MSVC17/libiconv_dll/libiconv_dll.vcxproj
+index d5365ad..13441ec 100644
+--- a/MSVC17/libiconv_dll/libiconv_dll.vcxproj
++++ b/MSVC17/libiconv_dll/libiconv_dll.vcxproj
+@@ -30,7 +30,7 @@
+     <ProjectGuid>{7EA4EC62-EA19-4ACC-86E2-0513E381292B}</ProjectGuid>
+     <RootNamespace>libiconv</RootNamespace>
+     <Keyword>Win32Proj</Keyword>
+-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
++    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+diff --git a/MSVC17/libiconv_static/libiconv_static.vcxproj b/MSVC17/libiconv_static/libiconv_static.vcxproj
+index 2026b13..b830bdf 100644
+--- a/MSVC17/libiconv_static/libiconv_static.vcxproj
++++ b/MSVC17/libiconv_static/libiconv_static.vcxproj
+@@ -30,7 +30,7 @@
+     <ProjectGuid>{F9C13A95-C7EB-40F3-A599-3695C1E0CF38}</ProjectGuid>
+     <RootNamespace>libiconv_static</RootNamespace>
+     <Keyword>Win32Proj</Keyword>
+-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
++    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
