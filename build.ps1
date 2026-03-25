@@ -115,4 +115,5 @@ Dir $iconvLib\libiconv* | Copy-Item -Force -Destination {Join-Path $iconvLib ($_
 BundleRelease "iconv-1.17.1.$distname" (dir $iconvLib\iconv_a*) (dir $iconvInc\*)
 BundleRelease "libxml2-2.11.9.$distname" (dir $xmlLib\*) (Get-Item $xmlInc\libxml)
 BundleRelease "libxslt-1.1.39.$distname" (dir .\libxslt\win32\bin.msvc\*) (Get-Item .\libxslt\libxslt,.\libxslt\libexslt)
-BundleRelease "zlib-1.3.1.$distname" (Get-Item .\zlib\*.*) (Get-Item .\zlib\zconf.h,.\zlib\zlib.h)
+BundleRelease "zlib-1.3.2.$distname" (Get-Item .\zlib\*.*) (Get-Item .\zlib\zconf.h,.\zlib\zlib.h)
+
