@@ -9,12 +9,31 @@ Param(
 $ErrorActionPreference = "Stop"
 Import-Module Pscx
 
-Function Get-BatPath($year, $edition, $vcvarsarch) {
-    if ($year -eq 2019) {
-        return "C:\Program Files (x86)\Microsoft Visual Studio\2019\$edition\VC\Auxiliary\Build\vcvars$vcvarsarch.bat"
-    } elseif ($year -eq 2022) {
-        return "C:\Program Files\Microsoft Visual Studio\2022\$edition\VC\Auxiliary\Build\vcvars$vcvarsarch.bat"
+Function Get-BatPath($vcvarsarch) {
+    $editions = "Community", "Enterprise"
+    $years = 2022, 18
+
+    foreach ($year in $years) {
+        if (Test-Path "C:\Program Files\Microsoft Visual Studio\$year\") {
+            $basedir = "C:\Program Files\Microsoft Visual Studio\$year\"
+        } elseif (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\$year\") {
+            $basedir = "C:\Program Files (x86)\Microsoft Visual Studio\$year\"
+        } else {
+            continue
+        }
+
+        foreach ($edition in $editions) {
+            $buildDir = "$basedir$edition\VC\Auxiliary\Build\"
+            $vcvars = (Get-ChildItem $buildDir -Filter "vcvars*$vcvarsarch*.bat" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+            Write-Host "Tried $buildDir, found $vcvars"
+            if (-not $vcvars) { continue }
+
+            Write-Host "Using: $vcvars"
+            return "$vcvars"
+        }
     }
+
+    throw "vcvars*.bat not found"
 }
 
 $platDir = If($x64) { "\x64" } ElseIf ($arm64) { "\arm64" } Else { "\Win32" }
@@ -22,26 +41,21 @@ $distname = If($x64) { "win64" } ElseIf($arm64) { "win-arm64" } Else { "win32" }
 
 $vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "arm64" } Else { "32" }
 
-$community = Get-BatPath 2022 "Community" $vcvarsarch
-$enterprise = Get-BatPath 2022 "Enterprise" $vcvarsarch
+$bat = Get-BatPath $vcvarsarch
 
-$bat = ""
-if (Test-Path $community) {
-    $bat = $community
-} elseif (Test-Path $enterprise) {
-    $bat = $enterprise
-}
-
-cmd.exe /c "call `"$bat`" && set > %temp%\vcvars$vcvarsarch.txt"
-Get-Content "$env:temp\vcvars$vcvarsarch.txt" | Foreach-Object {
-    if ($_ -match "^(.*?)=(.*)$") {
-        Set-Content "env:\$($matches[1])" $matches[2]
+& cmd.exe /c "`"$bat`" && set" | ForEach-Object {
+    if ($_ -match "^([^=]+)=(.*)$") {
+        [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
     }
 }
 
 Set-Location $PSScriptRoot
 
 Set-Location .\libiconv\MSVC17
+if ($arm64) {
+    (Get-Content -Path "libiconv_dll\libiconv_dll.vcxproj") -replace ">10.0.19041.0<", ">10.0.22621.0<" | Set-Content -Path "libiconv_dll\libiconv_dll.vcxproj"
+    (Get-Content -Path "libiconv_static\libiconv_static.vcxproj") -replace ">10.0.19041.0<", ">10.0.22621.0<" | Set-Content -Path "libiconv_static\libiconv_static.vcxproj"
+}
 msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release
 $iconvLib = Join-Path (pwd) $platDir\lib
 
@@ -97,4 +111,3 @@ BundleRelease "iconv-1.19.$distname" (dir $iconvLib\iconv_a*) (dir $iconvInc\*)
 BundleRelease "libxml2-2.11.9.$distname" (dir $xmlLib\*) (Get-Item $xmlInc\libxml)
 BundleRelease "libxslt-1.1.45.$distname" (dir .\libxslt\win32\bin.msvc\*) (Get-Item .\libxslt\libxslt,.\libxslt\libexslt)
 BundleRelease "zlib-1.3.2.$distname" (Get-Item .\zlib\*.*) (Get-Item .\zlib\zconf.h,.\zlib\zlib.h)
-
