@@ -20,7 +20,7 @@ Function Get-BatPath($year, $edition, $vcvarsarch) {
 $platDir = If($x64) { "\x64" } ElseIf ($arm64) { "\arm64" } Else { "\Win32" }
 $distname = If($x64) { "win64" } ElseIf($arm64) { "win-arm64" } Else { "win32" }
 
-$vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "x86_arm64" } Else { "32" }
+$vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "arm64" } Else { "32" }
 
 $community = Get-BatPath 2022 "Community" $vcvarsarch
 $enterprise = Get-BatPath 2022 "Enterprise" $vcvarsarch
