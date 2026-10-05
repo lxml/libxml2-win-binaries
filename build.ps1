@@ -3,7 +3,7 @@ This script builds libiconv, zlib, libxml2 and libxslt
 #>
 Param(
     [switch]$x64,
-    [switch]$arm64,
+    [switch]$arm64
 )
 
 $ErrorActionPreference = "Stop"
