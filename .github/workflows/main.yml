@@ -15,7 +15,7 @@ permissions:
   contents: write  # for creating releases
 
 jobs:
-  main:
+  x86:
     runs-on: windows-2022
 
     strategy:
@@ -24,14 +24,13 @@ jobs:
         architecture:
         - x86
         - x64
-        - arm64
         compiler:
         - vs2022
 
     steps:
 
     - name: checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         submodules: true
 
@@ -45,18 +44,60 @@ jobs:
         install-module pscx -scope CurrentUser -AllowClobber
         $x64param = if ('${{ matrix.architecture }}' -eq 'x64') { $true } else { $false }
         $arm64param = if ('${{ matrix.architecture }}' -eq 'arm64') { $true } else { $false }
-        $vs2008param = if ('${{ matrix.compiler }}' -eq 'vs2008') { $true } else { $false }
-        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param -vs2008:$vs2008param
+        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param
 
     - name: upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: libraries-${{ matrix.architecture }}.zip
         path: dist/*.zip
         if-no-files-found: ignore
 
     - name: release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/*.zip
+
+  arm64:
+    runs-on: windows-11-arm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture:
+        - arm64
+        compiler:
+        - vs2022
+
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v7
+      with:
+        submodules: true
+
+    - name: build
+      shell: pwsh
+      run: |
+        cd libiconv
+        git apply ..\libiconv.patch
+        cd ..
+        Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
+        install-module pscx -scope CurrentUser -AllowClobber
+        $x64param = if ('${{ matrix.architecture }}' -eq 'x64') { $true } else { $false }
+        $arm64param = if ('${{ matrix.architecture }}' -eq 'arm64') { $true } else { $false }
+        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param
+
+    - name: upload
+      uses: actions/upload-artifact@v7
+      with:
+        name: libraries-${{ matrix.architecture }}.zip
+        path: dist/*.zip
+        if-no-files-found: ignore
+
+    - name: release
+      uses: softprops/action-gh-release@v3
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: dist/*.zip

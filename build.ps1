@@ -4,7 +4,6 @@ This script builds libiconv, zlib, libxml2 and libxslt
 Param(
     [switch]$x64,
     [switch]$arm64,
-    [switch]$vs2008
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,44 +19,31 @@ Function Get-BatPath($year, $edition, $vcvarsarch) {
 
 $platDir = If($x64) { "\x64" } ElseIf ($arm64) { "\arm64" } Else { "\Win32" }
 $distname = If($x64) { "win64" } ElseIf($arm64) { "win-arm64" } Else { "win32" }
-If($vs2008) { $distname = "vs2008.$distname" }
 
-If($vs2008) {
-    $vcvarsarch = If($x64) { "amd64" } Else { "x86" }
-    Import-VisualStudioVars -VisualStudioVersion "90" -Architecture $vcvarsarch
-} Else {
-    $vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "x86_arm64" } Else { "32" }
+$vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "x86_arm64" } Else { "32" }
 
-    $community = Get-BatPath 2022 "Community" $vcvarsarch
-    $enterprise = Get-BatPath 2022 "Enterprise" $vcvarsarch
+$community = Get-BatPath 2022 "Community" $vcvarsarch
+$enterprise = Get-BatPath 2022 "Enterprise" $vcvarsarch
 
-    $bat = ""
-    if (Test-Path $community) {
-        $bat = $community
-    } elseif (Test-Path $enterprise) {
-        $bat = $enterprise
-    }
+$bat = ""
+if (Test-Path $community) {
+    $bat = $community
+} elseif (Test-Path $enterprise) {
+    $bat = $enterprise
+}
 
-    cmd.exe /c "call `"$bat`" && set > %temp%\vcvars$vcvarsarch.txt"
-    Get-Content "$env:temp\vcvars$vcvarsarch.txt" | Foreach-Object {
-        if ($_ -match "^(.*?)=(.*)$") {
-            Set-Content "env:\$($matches[1])" $matches[2]
-        }
+cmd.exe /c "call `"$bat`" && set > %temp%\vcvars$vcvarsarch.txt"
+Get-Content "$env:temp\vcvars$vcvarsarch.txt" | Foreach-Object {
+    if ($_ -match "^(.*?)=(.*)$") {
+        Set-Content "env:\$($matches[1])" $matches[2]
     }
 }
 
 Set-Location $PSScriptRoot
 
-if($vs2008) {
-    Set-Location .\libiconv\MSVC9
-    $vcarch = If($x64) { "x64" } Else {"Win32"}
-    vcbuild libiconv_static\libiconv_static.vcproj "Release|$vcarch"
-    $iconvLib = Join-Path (pwd) libiconv_static$platDir\Release
-} else {
-    Set-Location .\libiconv\MSVC17
-    msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release
-    $iconvLib = Join-Path (pwd) $platDir\lib
-}
+Set-Location .\libiconv\MSVC17
+msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release
+$iconvLib = Join-Path (pwd) $platDir\lib
 
 $iconvInc = Join-Path $PSScriptRoot libiconv\source\include
 
@@ -83,11 +69,6 @@ Set-Location .\libxslt\win32
 cscript configure.js lib="$zlibLib;$iconvLib;$xmlLib" include="$zlibInc;$iconvInc;$xmlInc" vcmanifest=yes zlib=yes
 Start-Process -NoNewWindow -Wait nmake "libxslta libexslta"
 Set-Location ..\..
-
-if($vs2008) {
-    # Pushed by Import-VisualStudioVars
-    Pop-EnvironmentBlock
-}
 
 # Bundle releases
 Function BundleRelease($name, $lib, $inc)
