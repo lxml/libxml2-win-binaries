@@ -24,12 +24,19 @@ Function Get-BatPath($vcvarsarch) {
 
         foreach ($edition in $editions) {
             $buildDir = "$basedir$edition\VC\Auxiliary\Build\"
-            $vcvars = (Get-ChildItem $buildDir -Filter "vcvars*$vcvarsarch*.bat" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+            $msvcDir = "$basedir$edition\VC\Tools\MSVC"
+            $vcvars = (Get-ChildItem $buildDir -Filter "vcvars$vcvarsarch.bat" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+
             Write-Host "Tried $buildDir, found $vcvars"
             if (-not $vcvars) { continue }
 
-            Write-Host "Using: $vcvars"
-            return "$vcvars"
+            $msvcVersions = Get-ChildItem $msvcDir -Directory
+            $paths = $msvcVersions.FullName
+            Write-Host "Found $paths"
+
+            $latestVersion = ($msvcVersions | Sort-Object Name -Descending)[0].Name
+            Write-Host "Using: $vcvars for MSVC $latestVersion"
+            return $vcvars, $latestVersion
         }
     }
 
@@ -41,7 +48,8 @@ $distname = If($x64) { "win64" } ElseIf($arm64) { "win-arm64" } Else { "win32" }
 
 $vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "arm64" } Else { "32" }
 
-$bat = Get-BatPath $vcvarsarch
+$bat, $latestVersion = Get-BatPath $vcvarsarch
+$env:VCTOOLSVERSION = $latestVersion
 
 & cmd.exe /c "`"$bat`" && set" | ForEach-Object {
     if ($_ -match "^([^=]+)=(.*)$") {
@@ -49,13 +57,14 @@ $bat = Get-BatPath $vcvarsarch
     }
 }
 
+Write-Host "VCToolsVersion: $env:VCToolsVersion"
+Write-Host "MSVC_VER: $env:MSVC_VER"
+Write-Host "VisualStudioVersion: $env:VisualStudioVersion"
+
 Set-Location $PSScriptRoot
 
-Set-Location .\libiconv\MSVC17
-if ($arm64) {
-    (Get-Content -Path "libiconv_dll\libiconv_dll.vcxproj") -replace ">10.0.19041.0<", ">10.0.22621.0<" | Set-Content -Path "libiconv_dll\libiconv_dll.vcxproj"
-    (Get-Content -Path "libiconv_static\libiconv_static.vcxproj") -replace ">10.0.19041.0<", ">10.0.22621.0<" | Set-Content -Path "libiconv_static\libiconv_static.vcxproj"
-}
+$msvcConfigDir = If ($arm64) { "MSVC18" } Else { "MSVC17" }
+Set-Location .\libiconv\$msvcConfigDir
 msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release
 $iconvLib = Join-Path (pwd) $platDir\lib
 
