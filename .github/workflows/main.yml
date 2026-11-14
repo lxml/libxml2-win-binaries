@@ -24,8 +24,8 @@ jobs:
         architecture:
         - x86
         - x64
-        compiler:
-        - vs2022
+        toolset:
+        - "14.44"
 
     steps:
 
@@ -44,14 +44,14 @@ jobs:
         install-module pscx -scope CurrentUser -AllowClobber
         $x64param = if ('${{ matrix.architecture }}' -eq 'x64') { $true } else { $false }
         $arm64param = if ('${{ matrix.architecture }}' -eq 'arm64') { $true } else { $false }
-        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param
+        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param -toolset "${{ matrix.toolset }}"
 
     - name: upload
       uses: actions/upload-artifact@v7
       with:
-        name: libraries-${{ matrix.architecture }}.zip
+        name: libraries-${{ matrix.architecture }}-msvc-${{ matrix.toolset }}.zip
         path: dist/*.zip
-        if-no-files-found: ignore
+        if-no-files-found: error
 
     - name: release
       uses: softprops/action-gh-release@v3
@@ -67,8 +67,8 @@ jobs:
       matrix:
         architecture:
         - arm64
-        compiler:
-        - vs2022
+        toolset:
+        - "14.52"
 
     steps:
 
@@ -87,14 +87,14 @@ jobs:
         install-module pscx -scope CurrentUser -AllowClobber
         $x64param = if ('${{ matrix.architecture }}' -eq 'x64') { $true } else { $false }
         $arm64param = if ('${{ matrix.architecture }}' -eq 'arm64') { $true } else { $false }
-        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param
+        pwsh .\build.ps1 -x64:$x64param -arm64:$arm64param -toolset "${{ matrix.toolset }}"
 
     - name: upload
       uses: actions/upload-artifact@v7
       with:
-        name: libraries-${{ matrix.architecture }}.zip
+        name: libraries-${{ matrix.architecture }}-msvc-${{ matrix.toolset }}.zip
         path: dist/*.zip
-        if-no-files-found: ignore
+        if-no-files-found: error
 
     - name: release
       uses: softprops/action-gh-release@v3
