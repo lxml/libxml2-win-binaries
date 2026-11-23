@@ -3,13 +3,15 @@ This script builds libiconv, zlib, libxml2 and libxslt
 #>
 Param(
     [switch]$x64,
-    [switch]$arm64
+    [switch]$arm64,
+    [ValidateSet("14.44", "14.52")]
+    [string]$toolset
 )
 
 $ErrorActionPreference = "Stop"
 Import-Module Pscx
 
-Function Get-BatPath($vcvarsarch) {
+Function Get-BatPath($vcvarsarch, $toolset) {
     $editions = "Community", "Enterprise"
     $years = 2022, 18
 
@@ -30,17 +32,18 @@ Function Get-BatPath($vcvarsarch) {
             Write-Host "Tried $buildDir, found $vcvars"
             if (-not $vcvars) { continue }
 
-            $msvcVersions = Get-ChildItem $msvcDir -Directory
+            $msvcVersions = Get-ChildItem $msvcDir -Directory | Where-Object { $_.Name -like "$toolset.*" }
+            if (-not $msvcVersions) { continue }
             $paths = $msvcVersions.FullName
             Write-Host "Found $paths"
 
-            $latestVersion = ($msvcVersions | Sort-Object Name -Descending)[0].Name
-            Write-Host "Using: $vcvars for MSVC $latestVersion"
-            return $vcvars, $latestVersion
+            $selectedVersion = ($msvcVersions | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1).Name
+            Write-Host "Using: $vcvars for MSVC $selectedVersion"
+            return $vcvars, $selectedVersion
         }
     }
 
-    throw "vcvars*.bat not found"
+    throw "MSVC $toolset for $vcvarsarch is required; install it with the Visual Studio Installer."
 }
 
 $platDir = If($x64) { "\x64" } ElseIf ($arm64) { "\arm64" } Else { "\Win32" }
@@ -48,15 +51,34 @@ $distname = If($x64) { "win64" } ElseIf($arm64) { "win-arm64" } Else { "win32" }
 
 $vcvarsarch = If($x64) { "x86_amd64" } ElseIf ($arm64) { "arm64" } Else { "32" }
 
-$bat, $latestVersion = Get-BatPath $vcvarsarch
-$env:VCTOOLSVERSION = $latestVersion
+# Keep these toolset families in sync with lxml/buildlibxml.py.
+if (-not $toolset) { $toolset = If ($arm64) { "14.52" } Else { "14.44" } }
+$bat, $selectedVersion = Get-BatPath $vcvarsarch $toolset
 
-& cmd.exe /c "`"$bat`" && set" | ForEach-Object {
+& cmd.exe /d /c "`"$bat`" -vcvars_ver=$selectedVersion && set" | ForEach-Object {
     if ($_ -match "^([^=]+)=(.*)$") {
         [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
     }
 }
 
+if ($LASTEXITCODE -ne 0) { throw "vcvars failed: $LASTEXITCODE" }
+if ($env:VCToolsVersion.TrimEnd('\', '/') -ne $selectedVersion) {
+    throw "Visual Studio did not select MSVC $selectedVersion"
+}
+
+# /GL objects require the exact compiler version, including servicing patches.
+$probe = [IO.Path]::GetTempFileName()
+try {
+    Set-Content -Path $probe -Value "_MSC_FULL_VER" -Encoding ascii
+    $compilerVersion = (& cl.exe /nologo /EP /TC $probe | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0 -or $compilerVersion -notmatch '^\d+$') {
+        throw "Cannot determine _MSC_FULL_VER: $compilerVersion"
+    }
+} finally {
+    Remove-Item $probe
+}
+$distname = "$distname.msvc-$compilerVersion"
+Write-Host "_MSC_FULL_VER: $compilerVersion"
 Write-Host "VCToolsVersion: $env:VCToolsVersion"
 Write-Host "MSVC_VER: $env:MSVC_VER"
 Write-Host "VisualStudioVersion: $env:VisualStudioVersion"
@@ -65,7 +87,10 @@ Set-Location $PSScriptRoot
 
 $msvcConfigDir = If ($arm64) { "MSVC18" } Else { "MSVC17" }
 Set-Location .\libiconv\$msvcConfigDir
-msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release
+$platform = If ($x64) { "x64" } ElseIf ($arm64) { "ARM64" } Else { "Win32" }
+$platformToolset = If ($toolset -eq "14.44") { "v143" } Else { "v145" }
+msbuild libiconv_static\libiconv_static.vcxproj /p:Configuration=Release /p:Platform=$platform /p:PlatformToolset=$platformToolset /p:VCToolsVersion=$selectedVersion
+if ($LASTEXITCODE -ne 0) { throw "libiconv build failed: $LASTEXITCODE" }
 $iconvLib = Join-Path (pwd) $platDir\lib
 
 $iconvInc = Join-Path $PSScriptRoot libiconv\source\include
@@ -73,7 +98,8 @@ $iconvInc = Join-Path $PSScriptRoot libiconv\source\include
 Set-Location $PSScriptRoot
 
 Set-Location .\zlib
-Start-Process -NoNewWindow -Wait nmake "-f win32/Makefile.msc zlib_a.lib"
+$build = Start-Process -NoNewWindow -Wait -PassThru nmake "-f win32/Makefile.msc zlib_a.lib"
+if ($build.ExitCode -ne 0) { throw "zlib build failed: $($build.ExitCode)" }
 $zlibLib = (pwd)
 $zlibInc = (pwd)
 
@@ -83,14 +109,16 @@ Set-Location ..
 
 Set-Location .\libxml2\win32
 cscript configure.js lib="$zlibLib;$iconvLib" include="$zlibInc;$iconvInc" vcmanifest=yes zlib=yes
-Start-Process -NoNewWindow -Wait nmake libxmla
+$build = Start-Process -NoNewWindow -Wait -PassThru nmake libxmla
+if ($build.ExitCode -ne 0) { throw "libxml2 build failed: $($build.ExitCode)" }
 $xmlLib = Join-Path (pwd) bin.msvc
 $xmlInc = Join-Path (pwd) ..\include
 Set-Location ..\..
 
 Set-Location .\libxslt\win32
 cscript configure.js lib="$zlibLib;$iconvLib;$xmlLib" include="$zlibInc;$iconvInc;$xmlInc" vcmanifest=yes zlib=yes
-Start-Process -NoNewWindow -Wait nmake "libxslta libexslta"
+$build = Start-Process -NoNewWindow -Wait -PassThru nmake "libxslta libexslta"
+if ($build.ExitCode -ne 0) { throw "libxslt build failed: $($build.ExitCode)" }
 Set-Location ..\..
 
 # Bundle releases
